@@ -26,3 +26,17 @@ The PII scrubber in `safety/pii_scrubber.py` has a `phone_us` regex that already
 **Setup confirmation:** [x] App runs locally at localhost:5173
 
 **Cohort ledger:** [x] Issue added to cohort ledger
+
+## Week 8 — Reproduction & solution planning
+
+**Reproduction commit link:** [e7a8280](https://github.com/csharathkumar/pathreview/commit/e7a8280038849d82ebdecb5ebb84fa2bdec34274)
+
+**Reproduction summary:**
+Ran `scripts/repro_issue_146.py` against the live `PIIScrubber` class: `scrub("Call me at (555) 123-4567 or 555-123-4567")` redacted the dashed number but left `(555) 123-4567` untouched, and `detect("Call me at (555) 123-4567")` returned `[]` with no phone detected at all. Root cause confirmed in `safety/pii_scrubber.py`: the `phone_us` regex allows `-` or `.` right after the closing `)`, but not a space, and the conventional parenthesized format always has a space there.
+
+**PLAN.md link:** [PLAN.md](https://github.com/csharathkumar/pathreview/blob/fix/146-parenthesized-phone-scrub/PLAN.md)
+
+**Walkthrough video (recommended):** (not recorded)
+
+**Blockers or open questions:**
+Still deciding between the smallest possible regex change (widen the separator character class to include whitespace) versus splitting `phone_us` into explicit dashed/dotted vs. parenthesized alternatives for readability. Need to verify the widened pattern doesn't introduce false positives on unrelated space-separated digit groups before committing to the simplest fix — see Risks & Unknowns in `PLAN.md`.
