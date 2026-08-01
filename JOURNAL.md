@@ -40,3 +40,16 @@ Ran `scripts/repro_issue_146.py` against the live `PIIScrubber` class: `scrub("C
 
 **Blockers or open questions:**
 Still deciding between the smallest possible regex change (widen the separator character class to include whitespace) versus splitting `phone_us` into explicit dashed/dotted vs. parenthesized alternatives for readability. Need to verify the widened pattern doesn't introduce false positives on unrelated space-separated digit groups before committing to the simplest fix — see Risks & Unknowns in `PLAN.md`.
+
+## Week 9 — Solution building & PR submission
+
+### Check-in 1 (mid-week)
+
+**Current progress:**
+Implemented the fix: replaced the `phone_us` regex's leading `\b` with `(?<!\w)` so a leading `(`/`+` is included in the redacted match, and widened the separator character class from `[-.]?` to `[-.\s]?` so whitespace is accepted. This resolved all 4 originally-failing tests plus a second latent bug I found in the same regex (`+1 555 123 4567` was also failing, for the same root cause). Added 3 new tests (`test_detect_parenthesized_phone_only`, `test_scrub_parenthesized_and_dashed_phone_together`, `test_phone_us_space_separated_tradeoff`) and type-annotated all existing test methods to satisfy the repo's mypy pre-commit hook. Along the way, fixed several pre-existing lint issues confined to the two files I'm editing, and confirmed (via `git stash` before/after comparison) that one remaining test failure (`test_mixed_pii_and_text`) is a pre-existing, unrelated bug in the `street_address` pattern, not something I introduced. Pushed the fix and opened a draft PR (#491).
+
+**Next steps:**
+Fill in the PR description (currently just the empty template), get peer/mentor review in Slack, address any feedback, then mark the PR ready for review before Sunday's deadline.
+
+**Blockers:**
+None currently. Earlier hiccups (zsh mangling a commit message containing `!`, and `make format` reformatting 51 unrelated files repo-wide) are resolved — commits are clean and scoped to just the 4 relevant files.
