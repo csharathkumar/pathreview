@@ -53,3 +53,22 @@ Fill in the PR description (currently just the empty template), get peer/mentor 
 
 **Blockers:**
 None currently. Earlier hiccups (zsh mangling a commit message containing `!`, and `make format` reformatting 51 unrelated files repo-wide) are resolved — commits are clean and scoped to just the 4 relevant files.
+
+---
+
+### Check-in 2 (end of week)
+
+**PR link:** [#491 — fix(safety): redact parenthesized and space-separated US phone numbers](https://github.com/ascherj/pathreview/pull/491)
+
+**Branch:** `fix/146-parenthesized-phone-scrub`
+
+**What you built:**
+Fixed the `phone_us` regex in `safety/pii_scrubber.py` so `scrub()`/`detect()` correctly catch parenthesized US phone numbers like `(555) 123-4567`, plus a second latent gap I found in the same pattern affecting space-separated numbers like `+1 555 123 4567`. The fix replaces the leading `\b` with `(?<!\w)` (so a leading `(`/`+` is included in the redacted match instead of left behind) and widens the separator character class to accept whitespace alongside `-`/`.`.
+
+**Tests added or updated:**
+`tests/unit/test_pii_scrubber.py` — added `test_detect_parenthesized_phone_only`, `test_scrub_parenthesized_and_dashed_phone_together`, and `test_phone_us_space_separated_tradeoff` (documents the accepted over-redaction trade-off from widening the separator class). Also added type annotations to all 29 existing test methods to satisfy the repo's mypy pre-commit hook.
+
+**Self-review confirmation:** [x] make check passes  [x] make test-unit passes
+(Scoped to the 4 files this PR touches: `ruff`, `black --check`, and `mypy` all clean; `pytest tests/unit/test_pii_scrubber.py` is 27 passed / 1 failed. The 1 failure, `test_mixed_pii_and_text`, is a pre-existing bug in the unrelated `street_address` pattern — confirmed via `git stash` comparison that it fails identically on `main`, before this PR's changes. Per this week's guidance on pre-existing failures, "passes" here means no new failures were introduced; documented in the PR's "Notes for Reviewers" along with ~159 pre-existing repo-wide `ruff` errors and other pre-existing `make test-unit` failures in unrelated modules.)
+
+**Draft PR feedback received from:** Posted in the cohort Slack channel asking for review; no response yet as of submission. PR was moved from draft to ready-for-review regardless, per this week's guidance that peer review is encouraged but "none" is an acceptable answer here.
